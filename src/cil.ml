@@ -5779,9 +5779,7 @@ let getGlobInit ?(main_name="main") (fl: file) =
         let basenoext = 
           String.sub fl.fileName (lastPathSep + 1) (!lastDot - lastPathSep - 1) 
         in
-        emptyFunction 
-          (Bytes.to_string
-             (makeValidSymbolName (Bytes.of_string ("__globinit_" ^ basenoext))))
+        emptyFunction (makeValidSymbolName ("__globinit_" ^ basenoext))
       in
       fl.globinit <- Some f;
       (* Now try to add a call to the global initialized at the beginning of 
