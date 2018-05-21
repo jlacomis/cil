@@ -2713,7 +2713,7 @@ let parseInt (str: string) : exp =
     let l = String.length str in
     fun s -> 
       let ls = String.length s in
-      l >= ls && s = String.uppercase (String.sub str (l - ls) ls)
+      l >= ls && s = String.uppercase_ascii (String.sub str (l - ls) ls)
   in
   let l = String.length str in
   (* See if it is octal or hex *)
@@ -5079,11 +5079,11 @@ let loadBinaryFile (filename : string) : file =
 
 (* Take the name of a file and make a valid symbol name out of it. There are 
  * a few characters that are not valid in symbols *)
-let makeValidSymbolName (s: string) = 
-  let s = String.copy s in (* So that we can update in place *)
-  let l = String.length s in
+let makeValidSymbolName (s: bytes) =
+  let s = Bytes.copy s in (* So that we can update in place *)
+  let l = Bytes.length s in
   for i = 0 to l - 1 do
-    let c = String.get s i in
+    let c = Bytes.get s i in
     let isinvalid = 
       match c with
         '-' | '.' -> true
@@ -5780,7 +5780,8 @@ let getGlobInit ?(main_name="main") (fl: file) =
           String.sub fl.fileName (lastPathSep + 1) (!lastDot - lastPathSep - 1) 
         in
         emptyFunction 
-          (makeValidSymbolName ("__globinit_" ^ basenoext))
+          (Bytes.to_string
+             (makeValidSymbolName (Bytes.of_string ("__globinit_" ^ basenoext))))
       in
       fl.globinit <- Some f;
       (* Now try to add a call to the global initialized at the beginning of 
