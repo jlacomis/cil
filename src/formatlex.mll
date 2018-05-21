@@ -149,7 +149,7 @@ let wbtowc wstr =
   for i = 0 to len-1 do 
     dest.[i*2] <- wstr.[i] ;
   done ;
-  dest
+  Bytes.to_string dest
 
 (* This function converst the "Hi" in L"Hi" to { L'H', L'i', L'\0' } *)
 let wstr_to_warray wstr =
