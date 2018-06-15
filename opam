@@ -3,7 +3,7 @@ authors: ["gabriel@kerneis.info"]
 maintainer: "gabriel@kerneis.info"
 homepage: "https://cil-project.github.io/cil/"
 bug-reports: "https://github.com/cil-project/cil/issues/"
-dev-repo: "git+https://github.com/cil-project/cil/"
+dev-repo: "git@github.com/cil-project/cil/"
 build: [
   ["env" "FORCE_PERL_PREFIX=1" "./configure" "--prefix" prefix]
   [make]
