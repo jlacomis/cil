@@ -22,7 +22,7 @@ remove: [
   [make "uninstall"]
 ]
 depends: [
-  "num"
+  "batteries"
   "ocamlfind"
   "ocamlbuild" {build}
   "hevea" {build & doc}
