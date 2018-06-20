@@ -1,9 +1,9 @@
 opam-version: "1.2"
 authors: ["gabriel@kerneis.info"]
-maintainer: "gabriel@kerneis.info"
+maintainer: "jlacomis@cmu.edu"
 homepage: "https://cil-project.github.io/cil/"
 bug-reports: "https://github.com/cil-project/cil/issues/"
-dev-repo: ""
+dev-repo: "git+ssh://git@github.com/jlacomis/cil.git#develop"
 build: [
   ["env" "FORCE_PERL_PREFIX=1" "./configure" "--prefix" prefix]
   [make]
