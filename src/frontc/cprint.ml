@@ -116,15 +116,15 @@ let print_unescaped_string str = print str
 (*
 ** Useful primitives
 *)
-let print_list print_sep print_elt lst = 
-  let _ = List.fold_left
-      (fun com elt ->
-	if com then print_sep ();
-	print_elt elt;
-	true)
-      false
-      lst in
-  ()
+let rec print_list print_sep print_elt lst =
+  match lst with
+  | hd :: [] -> print_elt hd
+  | hd :: tl -> begin
+      print_elt hd;
+      print_sep ();
+      print_list print_sep print_elt tl
+    end
+  | [] -> ()
 
 let print_commas nl fct lst =
   print_list (fun () -> print ","; if nl then new_line() else space()) fct lst;
