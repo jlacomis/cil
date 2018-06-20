@@ -127,8 +127,7 @@ let rec print_list print_sep print_elt lst =
   | [] -> ()
 
 let print_commas nl fct lst =
-  print_list (fun () -> print ","; if nl then new_line() else space()) fct lst;
-  print_maybe ","
+  print_list (fun () -> print ","; if nl then new_line() else space()) fct lst
 
 let print_string (s:string) =
   print ("\"" ^ escape_string s ^ "\"")
