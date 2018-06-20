@@ -110,9 +110,12 @@ let flush () = ()
 let commit () = ()
 
 let print_function = ref print
+let printu_function = ref printu
+let printl_function = ref printl
 
 let print = !print_function
-
+let printu = !printu_function
+let printl = !printl_function
 
 (* sm: for some reason I couldn't just call print from frontc.... ? *)
 let print_unescaped_string str = print str
@@ -927,8 +930,17 @@ let sprint (printer : unit) : string =
     let return_str = Printf.sprintf "%s" str in
     Buffer.add_string sprint_buffer return_str
   in
+  let sprintl_function strs =
+    List.iter sprint_function strs
+  in
   let old_print = !print_function in
+  let old_printu = !printu_function in
+  let old_printl = !printl_function in
   print_function := sprint_function;
+  printu_function := sprint_function;
+  printl_function := sprintl_function;
   printer;
   print_function := old_print;
+  printu_function := old_printu;
+  printl_function := old_printl;
   Bytes.to_string (Buffer.to_bytes sprint_buffer)
