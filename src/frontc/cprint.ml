@@ -920,7 +920,8 @@ let printFile (result : out_channel) ((fname, defs) : file) =
 let set_tab t = tab := t
 let set_width w = width := w
 
-let sprint_def def =
+(* Converts print functions in this file into sprint functions *)
+let sprint (printer : unit) : string =
   let sprint_buffer = Buffer.create 1024 in
   let sprint_function str =
     let return_str = Printf.sprintf "%s" str in
@@ -928,6 +929,6 @@ let sprint_def def =
   in
   let old_print = !print_function in
   print_function := sprint_function;
-  print_def def;
+  printer;
   print_function := old_print;
-  Buffer.to_bytes sprint_buffer
+  Bytes.to_string (Buffer.to_bytes sprint_buffer)
