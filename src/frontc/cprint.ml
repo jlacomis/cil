@@ -109,16 +109,12 @@ let force_new_line () = ()
 let flush () = ()
 let commit () = ()
 
-let print_function = ref print
-let printu_function = ref printu
-let printl_function = ref printl
-
-let print = !print_function
-let printu = !printu_function
-let printl = !printl_function
+let print = ref print
+let printu = ref printu
+let printl = ref printl
 
 (* sm: for some reason I couldn't just call print from frontc.... ? *)
-let print_unescaped_string str = print str
+let print_unescaped_string str = !print str
 
 
 (*
@@ -135,13 +131,13 @@ let rec print_list print_sep print_elt lst =
   | [] -> ()
 
 let print_commas nl fct lst =
-  print_list (fun () -> print ","; if nl then new_line() else space()) fct lst
+  print_list (fun () -> !print ","; if nl then new_line() else space()) fct lst
 
 let print_string (s:string) =
-  print ("\"" ^ escape_string s ^ "\"")
+  !print ("\"" ^ escape_string s ^ "\"")
 
 let print_wstring (s: int64 list ) =
-  print ("L\"" ^ escape_wstring s ^ "\"")
+  !print ("L\"" ^ escape_wstring s ^ "\"")
 
 (*
 ** Base Type Printing
@@ -150,56 +146,56 @@ let print_wstring (s: int64 list ) =
 let rec print_specifiers (specs: spec_elem list) =
   comprint "specifier(";
   let print_spec_elem = function
-      SpecTypedef -> print "typedef"
-    | SpecInline -> printu "inline"
+      SpecTypedef -> !print "typedef"
+    | SpecInline -> !printu "inline"
     | SpecStorage sto ->
-        printu (match sto with
+       !printu (match sto with
           NO_STORAGE -> (comstring "/*no storage*/")
         | AUTO -> "auto"
         | STATIC -> "static"
         | EXTERN -> "extern"
         | REGISTER -> "register")
     | SpecCV cv ->
-        printu (match cv with
+       !printu (match cv with
         | CV_CONST -> "const"
         | CV_VOLATILE -> "volatile"
         | CV_RESTRICT -> "restrict")
     | SpecAttr al -> print_attribute al; space ()
     | SpecType bt -> print_type_spec bt
-    | SpecPattern name -> printl ["@specifier";"(";name;")"]
+    | SpecPattern name -> !printl ["@specifier";"(";name;")"]
   in
   List.iter print_spec_elem specs
   ;comprint ")"
 
 
 and print_type_spec = function
-    Tvoid -> print "void "
-  | Tchar -> print "char "
-  | Tbool -> print "_Bool "
-  | Tshort -> print "short "
-  | Tint -> print "int "
-  | Tlong -> print "long "
-  | Tint64 -> print "__int64 "
-  | Tfloat -> print "float "
-  | Tdouble -> print "double "
-  | Tsigned -> printu "signed"
-  | Tunsigned -> print "unsigned "
-  | Tsizet  -> print "size_t "
-  | Tnamed s -> comprint "tnamed"; print s; space ();
-  | Tstruct (n, None, _) -> printl ["struct";n]
+    Tvoid -> !print "void "
+  | Tchar -> !print "char "
+  | Tbool -> !print "_Bool "
+  | Tshort -> !print "short "
+  | Tint -> !print "int "
+  | Tlong -> !print "long "
+  | Tint64 -> !print "__int64 "
+  | Tfloat -> !print "float "
+  | Tdouble -> !print "double "
+  | Tsigned -> !printu "signed"
+  | Tunsigned -> !print "unsigned "
+  | Tsizet  -> !print "size_t "
+  | Tnamed s -> comprint "tnamed"; !print s; space ();
+  | Tstruct (n, None, _) -> !printl ["struct";n]
   | Tstruct (n, Some flds, extraAttrs) ->
       (print_struct_name_attr "struct" n extraAttrs);
       (print_fields flds)
-  | Tunion (n, None, _) -> printl ["union";n;" "]
+  | Tunion (n, None, _) -> !printl ["union";n;" "]
   | Tunion (n, Some flds, extraAttrs) ->
       (print_struct_name_attr "union" n extraAttrs);
       (print_fields flds)
-  | Tenum (n, None, _) -> printl ["enum";n]
+  | Tenum (n, None, _) -> !printl ["enum";n]
   | Tenum (n, Some enum_items, extraAttrs) ->
       (print_struct_name_attr "enum" n extraAttrs);
       (print_enum_items enum_items)
-  | TtypeofE e -> printl ["__typeof__";"("]; print_expression e; print ") "
-  | TtypeofT (s,d) -> printl ["__typeof__";"("]; print_onlytype (s, d); print ") "
+  | TtypeofE e -> !printl ["__typeof__";"("]; print_expression e; !print ") "
+  | TtypeofT (s,d) -> !printl ["__typeof__";"("]; print_onlytype (s, d); !print ") "
 
 
 (* print "struct foo", but with specified keyword and a list of
@@ -207,11 +203,11 @@ and print_type_spec = function
 and print_struct_name_attr (keyword: string) (name: string) (extraAttrs: attribute list) =
 begin
   if extraAttrs = [] then
-    printl [keyword;name]
+    !printl [keyword;name]
   else begin
-    print keyword;
+    !print keyword;
     print_attributes extraAttrs;    (* prints a final space *)
-    print name;
+    !print name;
   end
 end
 
@@ -220,62 +216,62 @@ end
  * declarations are laid out as they need to be printed. *)
 and print_decl (n: string) = function
     JUSTBASE -> if n <> "___missing_field_name" then
-                  print n
+                  !print n
                 else
                   comprint "missing field name"
   | PARENTYPE (al1, d, al2) ->
-      print "(";
+      !print "(";
       print_attributes al1; space ();
       print_decl n d; space ();
-      print_attributes al2; print ")"
+      print_attributes al2; !print ")"
   | PTR (al, d) ->
-      print "* ";
+      !print "* ";
       print_attributes al; space ();
       print_decl n d
   | ARRAY (d, al, e) ->
       print_decl n d;
-      print "[";
+      !print "[";
       print_attributes al;
       if e <> NOTHING then print_expression e;
-      print "]"
+      !print "]"
   | PROTO(d, args, isva) ->
       comprint "proto(";
       print_decl n d;
-      print "(";
+      !print "(";
       print_params args isva;
-      print ")";
+      !print ")";
       comprint ")"
 
 
 and print_fields (flds : field_group list) =
-  if flds = [] then print " { } "
+  if flds = [] then !print " { } "
   else begin
-    print " {";
+    !print " {";
     indent ();
     List.iter
-      (fun fld -> print_field_group fld; print ";"; new_line ())
+      (fun fld -> print_field_group fld; !print ";"; new_line ())
       flds;
     unindent ();
-    print "} "
+    !print "} "
   end
 
 and print_enum_items items =
-  if items = [] then print " { } "
+  if items = [] then !print " { } "
   else begin
-    print " {";
+    !print " {";
     indent ();
     print_commas
       true
-      (fun (id, exp, loc) -> print id;
+      (fun (id, exp, loc) -> !print id;
 	if exp = NOTHING then ()
 	else begin
 	  space ();
-	  print "= ";
+	  !print "= ";
 	  print_expression exp
 	end)
       items;
     unindent ();
-    print "} ";
+    !print "} ";
   end
 
 
@@ -292,7 +288,7 @@ and print_init_name ((n, i) : init_name) =
   print_name n;
   if i <> NO_INIT then begin
     space ();
-    print "= ";
+    !print "= ";
     print_init_expression i
   end
 
@@ -309,7 +305,7 @@ and print_field (name, widtho) =
   print_name name;
   (match widtho with
     None -> ()
-  | Some w -> print " : ";  print_expression w)
+  | Some w -> !print " : ";  print_expression w)
 
 and print_init_name_group (specs, names) =
   print_specifiers specs;
@@ -321,11 +317,11 @@ and print_single_name (specs, name) =
 
 and print_params (pars : single_name list) (ell : bool) =
   print_commas false print_single_name pars;
-  if ell then printl (if pars = [] then ["..."] else [",";"..."]) else ()
+  if ell then !printl (if pars = [] then ["..."] else [",";"..."]) else ()
 
 and print_old_params pars ell =
-  print_commas false (fun id -> print id) pars;
-  if ell then printl (if pars = [] then ["..."] else [",";"..."]) else ()
+  print_commas false (fun id -> !print id) pars;
+  if ell then !printl (if pars = [] then ["..."] else [",";"..."]) else ()
 
 
 (*
@@ -426,25 +422,25 @@ and print_init_expression (iexp: init_expression) : unit =
         | i, e ->
             let rec doinit = function
                 NEXT_INIT -> ()
-              | INFIELD_INIT (fn, i) -> printl [".";fn]; doinit i
+              | INFIELD_INIT (fn, i) -> !printl [".";fn]; doinit i
               | ATINDEX_INIT (e, i) ->
-                  print "[";
+                  !print "[";
                   print_expression e;
-                  print "]";
+                  !print "]";
                   doinit i
               | ATINDEXRANGE_INIT (s, e) ->
-                  print "[";
+                  !print "[";
                   print_expression s;
-                  print " ... ";
+                  !print " ... ";
                   print_expression e;
-                  print "]"
+                  !print "]"
                 in
-            doinit i; print " = ";
+            doinit i; !print " = ";
             print_init_expression e
       in
-      print "{";
+      !print "{";
       print_commas false doinitexp initexps;
-      print "}"
+      !print "}"
 
 and print_expression (exp: expression) = print_expression_level 1 exp
 
@@ -452,21 +448,21 @@ and print_expression_level (lvl: int) (exp : expression) =
   let (txt, lvl') = get_operator exp in
   let _ = match exp with
     NOTHING -> ()
-  | PAREN exp -> print "("; print_expression exp; print ")"
+  | PAREN exp -> !print "("; print_expression exp; !print ")"
   | UNARY (op, exp') ->
       (match op with
 	POSINCR | POSDECR ->
 	  print_expression_level lvl' exp';
-	  print txt
+	  !print txt
       | _ ->
-	  print txt; space (); (* Print the space to avoid --5 *)
+	  !print txt; space (); (* Print the space to avoid --5 *)
 	  print_expression_level lvl' exp')
-  | LABELADDR l -> printl ["&&";l]
+  | LABELADDR l -> !printl ["&&";l]
   | BINARY (op, exp1, exp2) ->
 			(*if (op = SUB) && (lvl <= lvl') then print "(";*)
       print_expression_level lvl' exp1;
       space ();
-      print txt;
+      !print txt;
       space ();
 			(*print_expression exp2 (if op = SUB then (lvl' + 1) else lvl');*)
       print_expression_level (lvl' + 1) exp2
@@ -474,15 +470,15 @@ and print_expression_level (lvl: int) (exp : expression) =
   | QUESTION (exp1, exp2, exp3) ->
       print_expression_level 2 exp1;
       space ();
-      print "? ";
+      !print "? ";
       print_expression_level 2 exp2;
       space ();
-      print ": ";
+      !print ": ";
       print_expression_level 2 exp3;
   | CAST (typ, iexp) ->
-      print "(";
+      !print "(";
       print_onlytype typ;
-      print ")";
+      !print ")";
      (* Always print parentheses. In a small number of cases when we print
       * constants we don't need them  *)
       (match iexp with
@@ -490,66 +486,66 @@ and print_expression_level (lvl: int) (exp : expression) =
       | COMPOUND_INIT _ -> (* print "("; *)
           print_init_expression iexp
           (* ; print ")" *)
-      | NO_INIT -> print "<NO_INIT in cast. Should never arise>")
+      | NO_INIT -> !print "<NO_INIT in cast. Should never arise>")
 
   | CALL (VARIABLE "__builtin_va_arg", [arg; TYPE_SIZEOF (bt, dt)]) ->
       comprint "variable";
-      print "__builtin_va_arg";
-      print "(";
+      !print "__builtin_va_arg";
+      !print "(";
       print_expression_level 1 arg;
-      print ",";
+      !print ",";
       print_onlytype (bt, dt);
-      print ")"
+      !print ")"
   | CALL (exp, args) ->
       print_expression_level 16 exp;
-      print "(";
+      !print "(";
       print_comma_exps args;
-      print ")"
+      !print ")"
   | COMMA exps ->
       print_comma_exps exps
   | CONSTANT cst ->
       (match cst with
-	CONST_INT i -> print i
-      | CONST_FLOAT r -> print r
-      | CONST_CHAR c -> print ("'" ^ escape_wstring c ^ "'")
-      | CONST_WCHAR c -> print ("L'" ^ escape_wstring c ^ "'")
+	CONST_INT i -> !print i
+      | CONST_FLOAT r -> !print r
+      | CONST_CHAR c -> !print ("'" ^ escape_wstring c ^ "'")
+      | CONST_WCHAR c -> !print ("L'" ^ escape_wstring c ^ "'")
       | CONST_STRING s -> print_string s
       | CONST_WSTRING ws -> print_wstring ws)
   | VARIABLE name ->
       comprint "variable";
-      print name
+      !print name
   | EXPR_SIZEOF exp ->
-      print "sizeof";
+      !print "sizeof";
       print_expression_level 0 exp
   | TYPE_SIZEOF (bt,dt) ->
-      printl ["sizeof";"("];
+      !printl ["sizeof";"("];
       print_onlytype (bt, dt);
-      print ")"
+      !print ")"
   | EXPR_ALIGNOF exp ->
-      printl ["__alignof__";"("];
+      !printl ["__alignof__";"("];
       print_expression_level 0 exp;
-      print ")"
+      !print ")"
   | TYPE_ALIGNOF (bt,dt) ->
-      printl ["__alignof__";"("];
+      !printl ["__alignof__";"("];
       print_onlytype (bt, dt);
-      print ")"
+      !print ")"
   | INDEX (exp, idx) ->
       print_expression_level 16 exp;
-      print "[";
+      !print "[";
       print_expression_level 0 idx;
-      print "]"
+      !print "]"
   | MEMBEROF (exp, fld) ->
       print_expression_level 16 exp;
-      printl [".";fld]
+      !printl [".";fld]
   | MEMBEROFPTR (exp, fld) ->
       print_expression_level 16 exp;
-      printl ["->";fld]
+      !printl ["->";fld]
   | GNU_BODY (blk) ->
-      print "(";
+      !print "(";
       print_block blk;
-      print ")"
+      !print ")"
   | EXPR_PATTERN (name) ->
-      printl ["@expr";"(";name;")"]
+      !printl ["@expr";"(";name;")"]
   in
   ()
 
@@ -561,12 +557,12 @@ and print_statement stat =
   match stat with
     NOP (loc) ->
       setLoc(loc);
-      print ";";
+      !print ";";
       new_line ()
   | COMPUTATION (exp, loc) ->
       setLoc(loc);
       print_expression exp;
-      print ";";
+      !print ";";
       new_line ()
   | BLOCK (blk, loc) -> print_block blk
 
@@ -576,102 +572,102 @@ and print_statement stat =
       print_statement s2;
   | IF (exp, s1, s2, loc) ->
       setLoc(loc);
-      printl ["if";"("];
+      !printl ["if";"("];
       print_expression_level 0 exp;
-      print ")";
+      !print ")";
       print_substatement s1;
       (match s2 with
       | NOP(_) -> ()
       | _ -> begin
-          print "else";
+          !print "else";
           print_substatement s2;
         end)
   | WHILE (exp, stat, loc) ->
       setLoc(loc);
-      printl ["while";"("];
+      !printl ["while";"("];
       print_expression_level 0 exp;
-      print ")";
+      !print ")";
       print_substatement stat
   | DOWHILE (exp, stat, loc) ->
       setLoc(loc);
-      print "do";
+      !print "do";
       print_substatement stat;
-      printl ["while";"("];
+      !printl ["while";"("];
       print_expression_level 0 exp;
-      print ");";
+      !print ");";
       new_line ();
   | FOR (fc1, exp2, exp3, stat, loc) ->
       setLoc(loc);
-      printl ["for";"("];
+      !printl ["for";"("];
       (match fc1 with
-        FC_EXP exp1 -> print_expression_level 0 exp1; print ";"
+        FC_EXP exp1 -> print_expression_level 0 exp1; !print ";"
       | FC_DECL dec1 -> print_def dec1);
       space ();
       print_expression_level 0 exp2;
-      print ";";
+      !print ";";
       space ();
       print_expression_level 0 exp3;
-      print ")";
+      !print ")";
       print_substatement stat
   | BREAK (loc)->
       setLoc(loc);
-      print "break;"; new_line ()
+      !print "break;"; new_line ()
   | CONTINUE (loc) ->
       setLoc(loc);
-      print "continue;"; new_line ()
+      !print "continue;"; new_line ()
   | RETURN (exp, loc) ->
       setLoc(loc);
-      print "return";
+      !print "return";
       if exp = NOTHING
       then ()
       else begin
-	print " ";
+	!print " ";
 	print_expression_level 1 exp
       end;
-      print ";";
+      !print ";";
       new_line ()
   | SWITCH (exp, stat, loc) ->
       setLoc(loc);
-      printl ["switch";"("];
+      !printl ["switch";"("];
       print_expression_level 0 exp;
-      print ")";
+      !print ")";
       print_substatement stat
   | CASE (exp, stat, loc) ->
       setLoc(loc);
       unindent ();
-      print "case ";
+      !print "case ";
       print_expression_level 1 exp;
-      print ":";
+      !print ":";
       indent ();
       print_substatement stat
   | CASERANGE (expl, exph, stat, loc) ->
       setLoc(loc);
       unindent ();
-      print "case ";
+      !print "case ";
       print_expression expl;
-      print " ... ";
+      !print " ... ";
       print_expression exph;
-      print ":";
+      !print ":";
       indent ();
       print_substatement stat
   | DEFAULT (stat, loc) ->
       setLoc(loc);
       unindent ();
-      print "default :";
+      !print "default :";
       indent ();
       print_substatement stat
   | LABEL (name, stat, loc) ->
       setLoc(loc);
-      printl [name;":"];
+      !printl [name;":"];
       space ();
       print_substatement stat
   | GOTO (name, loc) ->
       setLoc(loc);
-      printl ["goto";name;";"];
+      !printl ["goto";name;";"];
       new_line ()
   | COMPGOTO (exp, loc) ->
       setLoc(loc);
-      print ("goto *"); print_expression exp; print ";"; new_line ()
+      !print ("goto *"); print_expression exp; !print ";"; new_line ()
   | DEFINITION d ->
       print_def d
   | ASM (attrs, tlist, details, loc) ->
@@ -680,54 +676,54 @@ and print_statement stat =
         print_string cnstr; space (); print_expression_level 100 e
       in
       if !msvcMode then begin
-        print "__asm {";
-        print_list (fun () -> new_line()) print tlist; (* templates *)
-        print "};"
+        !print "__asm {";
+        print_list (fun () -> new_line()) !print tlist; (* templates *)
+        !print "};"
       end else begin
-        print "__asm__ ";
+        !print "__asm__ ";
         print_attributes attrs;
-        print "(";
+        !print "(";
         print_list (fun () -> new_line()) print_string tlist; (* templates *)
 	begin
 	  match details with
 	  | None -> ()
 	  | Some { aoutputs = outs; ainputs = ins; aclobbers = clobs } ->
-              print ":"; space ();
+              !print ":"; space ();
               print_commas false print_asm_operand outs;
               if ins <> [] || clobs <> [] then begin
-		print ":"; space ();
+		!print ":"; space ();
 		print_commas false print_asm_operand ins;
 		if clobs <> [] then begin
-		  print ":"; space ();
+		  !print ":"; space ();
 		  print_commas false print_string clobs
 		end;
               end
 	end;
-        print ");"
+        !print ");"
       end;
       new_line ()
   | TRY_FINALLY (b, h, loc) ->
       setLoc loc;
-      print "__try ";
+      !print "__try ";
       print_block b;
-      print "__finally ";
+      !print "__finally ";
       print_block h
 
   | TRY_EXCEPT (b, e, h, loc) ->
       setLoc loc;
-      print "__try ";
+      !print "__try ";
       print_block b;
-      printl ["__except";"("]; print_expression e; print ")";
+      !printl ["__except";"("]; print_expression e; !print ")";
       print_block h
 
 and print_block blk =
   new_line();
-  print "{";
+  !print "{";
   indent ();
   if blk.blabels <> [] then begin
-    print "__label__ ";
-    print_commas false print blk.blabels;
-    print ";";
+    !print "__label__ ";
+    print_commas false !print blk.blabels;
+    !print ";";
     new_line ();
   end;
   if blk.battrs <> [] then begin
@@ -736,7 +732,7 @@ and print_block blk =
   end;
   List.iter print_statement blk.bstmts;
   unindent ();
-  print "}";
+  !print "}";
   new_line ()
 
 and print_substatement stat =
@@ -745,11 +741,11 @@ and print_substatement stat =
   | SEQUENCE _
   | DOWHILE _ ->
       new_line ();
-      print "{";
+      !print "{";
       indent ();
       print_statement stat;
       unindent ();
-      print "}";
+      !print "}";
       new_line ();
   | BLOCK _ ->
       print_statement stat
@@ -763,15 +759,15 @@ and print_substatement stat =
 ** GCC Attributes
 *)
 and print_attribute (name,args) =
-  if args = [] then printu name
+  if args = [] then !printu name
   else begin
-    print name;
-    print "("; if name = "__attribute__" then print "(";
+    !print name;
+    !print "("; if name = "__attribute__" then !print "(";
     (match args with
-      [VARIABLE "aconst"] -> printu "const"
-    | [VARIABLE "restrict"] -> printu "restrict"
+      [VARIABLE "aconst"] -> !printu "const"
+    | [VARIABLE "restrict"] -> !printu "restrict"
     | _ -> print_commas false (fun e -> print_expression e) args);
-    print ")"; if name = "__attribute__" then print ")"
+    !print ")"; if name = "__attribute__" then !print ")"
   end
 
 (* Print attributes. *)
@@ -806,7 +802,7 @@ and print_def def =
           print_def (DECDEF (([SpecType Tint],
                               [(fname ^ "__counter", JUSTBASE, [], cabslu),
                                 NO_INIT]), loc));
-        with Not_found -> print "/* can't print the counter */"
+        with Not_found -> !print "/* can't print the counter */"
       end;
       setLoc(loc);
       print_single_name proto;
@@ -817,14 +813,14 @@ and print_def def =
       comprint "decdef";
       setLoc(loc);
       print_init_name_group names;
-      print ";";
+      !print ";";
       new_line ()
 
   | TYPEDEF (names, loc) ->
       comprint "typedef";
       setLoc(loc);
       print_name_group names;
-      print ";";
+      !print ";";
       new_line ();
       force_new_line ()
 
@@ -832,20 +828,20 @@ and print_def def =
       comprint "onlytypedef";
       setLoc(loc);
       print_specifiers specs;
-      print ";";
+      !print ";";
       new_line ();
       force_new_line ()
 
   | GLOBASM (asm, loc) ->
       setLoc(loc);
-      printl ["__asm__";"("];  print_string asm; print ");";
+      !printl ["__asm__";"("];  print_string asm; !print ");";
       new_line ();
       force_new_line ()
 
   | PRAGMA (a,loc) ->
       setLoc(loc);
       force_new_line ();
-      print "#pragma ";
+      !print "#pragma ";
       let oldwidth = !width in
       width := 1000000;  (* Do not wrap pragmas *)
       print_expression a;
@@ -855,37 +851,37 @@ and print_def def =
   | LINKAGE (n, loc, dl) ->
       setLoc (loc);
       force_new_line ();
-      print "extern "; print_string n; print_string "  {";
+      !print "extern "; print_string n; print_string "  {";
       List.iter print_def dl;
       print_string "}";
       force_new_line ()
 
   | TRANSFORMER(srcdef, destdeflist, loc) ->
       setLoc(loc);
-      print "@transform {";
+      !print "@transform {";
       force_new_line();
-      print "{";
+      !print "{";
         force_new_line();
         indent ();
         print_def srcdef;
         unindent();
-      print "}";
+      !print "}";
       force_new_line();
-      print "to {";
+      !print "to {";
         force_new_line();
         indent();
         List.iter print_def destdeflist;
         unindent();
-      print "}";
+      !print "}";
       force_new_line()
 
   | EXPRTRANSFORMER(srcexpr, destexpr, loc) ->
       setLoc(loc);
-      print "@transformExpr { ";
+      !print "@transformExpr { ";
       print_expression srcexpr;
-      print " } to { ";
+      !print " } to { ";
       print_expression destexpr;
-      print " }";
+      !print " }";
       force_new_line()
 
 
@@ -893,9 +889,9 @@ and print_def def =
 and comprint (str : string) : unit =
 begin
   if (!printComments) then (
-    print "/*";
-    print str;
-    print "*/ "
+    !print "/*";
+    !print str;
+    !print "*/ "
   )
   else
     ()
@@ -933,14 +929,14 @@ let sprint (printer : unit) : string =
   let sprintl_function strs =
     List.iter sprint_function strs
   in
-  let old_print = !print_function in
-  let old_printu = !printu_function in
-  let old_printl = !printl_function in
-  print_function := sprint_function;
-  printu_function := sprint_function;
-  printl_function := sprintl_function;
+  let old_print = !print in
+  let old_printu = !printu in
+  let old_printl = !printl in
+  print := sprint_function;
+  printu := sprint_function;
+  printl := sprintl_function;
   printer;
-  print_function := old_print;
-  printu_function := old_printu;
-  printl_function := old_printl;
+  print := old_print;
+  printu := old_printu;
+  printl := old_printl;
   Bytes.to_string (Buffer.to_bytes sprint_buffer)
