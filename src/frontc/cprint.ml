@@ -109,6 +109,11 @@ let force_new_line () = ()
 let flush () = ()
 let commit () = ()
 
+let print_function = ref print
+
+let print = !print_function
+
+
 (* sm: for some reason I couldn't just call print from frontc.... ? *)
 let print_unescaped_string str = print str
 
@@ -914,3 +919,15 @@ let printFile (result : out_channel) ((fname, defs) : file) =
 
 let set_tab t = tab := t
 let set_width w = width := w
+
+let sprint_def def =
+  let sprint_buffer = Buffer.create 1024 in
+  let sprint_function str =
+    let return_str = Printf.sprintf "%s" str in
+    Buffer.add_string sprint_buffer return_str
+  in
+  let old_print = !print_function in
+  print_function := sprint_function;
+  print_def def;
+  print_function := old_print;
+  Buffer.to_bytes sprint_buffer
