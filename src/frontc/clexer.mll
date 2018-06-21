@@ -41,6 +41,8 @@
 ** 2.0  George Necula 12/12/00: Many extensions
 *)
 {
+module Cprint = Cprint.Print
+
 open Cparser
 open Pretty
 exception Eof

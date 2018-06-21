@@ -35,6 +35,7 @@
  *
  *)
 
+module Cprint = Cprint.Print
 
 module E = Errormsg
 open Trace

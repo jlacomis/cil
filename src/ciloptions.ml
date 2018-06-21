@@ -37,6 +37,8 @@
  *)
 
 
+module Cprint = Cprint.Print
+
 module E = Errormsg
 
 let setDebugFlag v name = 

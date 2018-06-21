@@ -39,6 +39,8 @@
 (* patch.ml *)
 (* CABS file patching *)
 
+module Cprint = Cprint.Print
+
 open Cabs
 open Cabshelper
 open Trace

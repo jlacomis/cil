@@ -37,6 +37,8 @@
 
 (* Type check and elaborate ABS to CIL *)
 
+module Cprint = Cprint.Print
+
 (* The references to ISO means ANSI/ISO 9899-1999 *)
 module A = Cabs
 module C = Cabshelper

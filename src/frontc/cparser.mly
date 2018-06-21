@@ -41,6 +41,7 @@
 *)
 */
 %{
+module Cprint = Cprint.Print
 open Cabs
 open Cabshelper
 module E = Errormsg
